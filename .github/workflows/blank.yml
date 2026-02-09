@@ -7,13 +7,11 @@ on:
     branches: [ "release" ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: write
   pages: write
   id-token: write
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -27,19 +25,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      # Copy CV to docs folder
+      # Copy CV to docs folder (this always overwrites)
       - name: Copy CV to docs
         run: |
           mkdir -p docs
-          cp ./PDF/HPhillips-CV-WebSafe.pdf ./docs/
+          cp -f ./PDF/HPhillips-CV-WebSafe.pdf ./docs/
           
       # Commit and push the changes
       - name: Commit changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add docs/
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update CV in docs folder"
+          git add docs/HPhillips-CV-WebSafe.pdf
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update CV in docs folder [$(date +'%Y-%m-%d %H:%M:%S')]"
           
       - name: Push changes
         run: git push
