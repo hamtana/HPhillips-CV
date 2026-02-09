@@ -5,10 +5,15 @@ on:
   # Triggers the workflow on push or pull request events but only for the "release" branch
   push:
     branches: [ "release" ]
-  pull_request:
-    branches: [ "release" ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -19,6 +24,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       # Copy CV to docs folder
       - name: Copy CV to docs
@@ -35,7 +42,25 @@ jobs:
           git diff --quiet && git diff --staged --quiet || git commit -m "Update CV in docs folder"
           
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        run: git push
+        
+  # Deploy to GitHub Pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          ref: release
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
